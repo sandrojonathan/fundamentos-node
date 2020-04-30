@@ -16,13 +16,15 @@ class CreateTransactionService {
 
   public execute({ title, value, type }: RequestTransaction): Transaction {
     // TODO
-    if (type === 'outcome') {
-      const balance = this.transactionsRepository.getBalance();
-      if (balance.income === 0) {
-        throw Error(
-          'should not be able to create outcome transaction without a valid balancethis appointment is already booked',
-        );
-      }
+
+    if (!['income', 'outcome'].includes(type)) {
+      throw new Error('Transaction type is invalid');
+    }
+
+    const { total } = this.transactionsRepository.getBalance();
+    if (type === 'outcome' && total < value) {
+      // faltava new error
+      throw new Error('You do not have enough balance');
     }
 
     const transaction = this.transactionsRepository.create({
@@ -30,6 +32,7 @@ class CreateTransactionService {
       value,
       type,
     });
+
     return transaction;
   }
 }
